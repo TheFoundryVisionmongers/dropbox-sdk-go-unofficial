@@ -23,9 +23,22 @@ package files
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"time"
 )
+
+type Time time.Time
+
+func NewTime(t time.Time) Time {
+	return Time(t)
+}
+
+func (s Time) MarshalJSON() ([]byte, error) {
+	t := time.Time(s).UTC()
+
+	return []byte(fmt.Sprintf(`"%d-%d-%dT%d:%d:%dZ"`, t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())), nil
+}
 
 type CommitInfo struct {
 	// Path in the user's Dropbox to save the file.
@@ -40,7 +53,7 @@ type CommitInfo struct {
 	// can also record an additional timestamp, provided by Dropbox desktop
 	// clients, mobile clients, and API apps of when the file was actually created
 	// or modified.
-	ClientModified time.Time `json:"client_modified,omitempty"`
+	ClientModified Time `json:"client_modified,omitempty"`
 	// Normally, users are made aware of any file modifications in their Dropbox
 	// account via notifications in the client software. If `True`, this tells the
 	// clients that this modification shouldn't result in a user notification.
